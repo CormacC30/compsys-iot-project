@@ -1,24 +1,33 @@
-# Mould Detector
+# Record Pal: Smart Record Shelf
 #### Student Name: Cormac Costello  Student ID: 11399631   
 
 # Project Background and description:
-This will be achieved by using an Arduino MKRWiFi1010 in the IoTCarrier board equipped with sensors for monitoring the local air temperature, humidity, air quality, light intensity, and moisture at the surface of the wall to allow early detection of conditions in your home for black mould growth. 
-The sensor data from the Arduino can be sent to a ThingSpeak channel using MQTT. the data accessed and managed directly through this. When conditions become favourable for black mould growth (e.g. temperature > 18 oC, humidity > 70% RH, moist surface, dark), the user will receive a notification to open windows, switch on dehumidifiers via email/social media. This can be done using MQTT broker with a ThingSpeak React and IFTTT Webhooks. If this is up and running effectively, a further release will incorporate a Raspberry Pi connected to the Arduino via serial USB connection over which sensor data will be sent to the Pi. The Pi can be connected to the WiFi home router. If needs be, the raw data can be processed locally on the Pi e.g. using a Python script) and made available on a REST API. This data can be graphically displayed on a web dashboard, with member login (built using a JavaScript framework such as Express), deployed with Glitch. A user can activate fan/dehumidifier (simulated in Packet Tracer) using a HTTP request through the API. Using the Pi also enables the possibility of incorporating a camera, and image feed (a stretch goal for later releases).
+Own a disorganised record collection? Don't even know what's in there?
+Look no further!
+This is a Raspberry Pi / Arduino project which incorporates the use of a camera module with the Raspberry Pi.
+You scan a record (Pi camera) and using and Google Cloud Vision image recognition API, the record details are fetched from web, added to your collection database, and added to a web dashboard. The Pi is connected to the home network via WiFi. The Pi camera will be triggered by a proximity/Gesture sensor (Arduino Carrier).
+Your collection can be categorised alphabetically or by genre, and the records will be allocated a new spot on the record shelf. There will be a simple web interface built with JavaScript, and deployed on Glitch. 
+
+Prototype will be built using single shelf/box.
+There is potential to expand the project to read local temperature and humidity, with warning triggered when humidity exceeds 50% RH (not good for vinyl). Local conditions will be displayed on the local display and on web dashboard.
+
+The web interface aims to feature a option to allow a user to select the record they wish to put back, and an LED will light up in the spot on the shelf allocated by the algorithm - using a HTTP GET request and a strip of individually addressable LEDs (Adafruit NeoPixel).
 
 # Tools, Technologies and Equipment:
-1.	Arduino MKRWIFI1010 with IoT carrier
-2.	Arduino IDE
-3.	Onboard Environmental sensors: temperature, humidity, RGB light sensor, IAQ sensor.
-4.	Capacitive moisture sensor
-5.	C++
+1.	Raspberry Pi (with camera module)
+2.	Arduino MKR WiFi 1010 with IoT Carrier (optional)
+3.	Addressable LED strip (Adafruit NeoPixel)
+4.	Proximity sensor
+5.	Python (for Raspberry Pi programming)
 6.	Raspberry Pi
-7.	Python
-8.	Node.js / Express
-9.	JavaScript
-10.	Glitch
-11.	ThingSpeak
-12.	IFTTT/Webhooks
-13.	Packet Tracer
+7.	Node.js / Express
+8.	JavaScript
+9.	Glitch
+10.	Arduino IDE (for Arduino programming)
+11.	Blynk
+12.	Spotify API or YouTube API (for music playback)
+13. Google Cloud vision API.
+
 This is an ambitious project but many of the implementations described here are achievable with ample potential for future expansion/future releases with ideas for more advanced features (if time allows!).
 
 # Project Repository

@@ -1,9 +1,11 @@
 #include <Wire.h>
 #include "bsec.h"
 #include <Arduino_APDS9960.h>
-//#include <Arduino_MKRIoTCarrier.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include "arduino_secrets.h"
+#include <ArduinoJson.h>
 
-//MKRIoTCarrier carrier;
 Bsec iaqSensor;
 
 String output;
@@ -17,14 +19,15 @@ bool trigger = false;
 
 void setup(void)
 {
-  Serial.begin(115200);
-  delay(1000);
+  Serial.begin(115200); //115200
+
+  while(!Serial);
   pinMode(LED_BUILTIN, OUTPUT);
-  //carrier.begin();
+  delay(1000);
 
   iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
-  output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
-  Serial.println(output);
+ // output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
+ // Serial.println(output);
   checkIaqSensorStatus();
 
   bsec_virtual_sensor_t sensorList[13] = {
@@ -53,41 +56,18 @@ if (!APDS.begin()) {
   }
 
   // Print the header
-  output = "Timestamp [ms], IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
-  Serial.println(output);
+ // output = "Timestamp [ms], IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
+ //  output = "IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
+//Serial.println(output);
 }
 
 void loop(void)
 {
-  unsigned long time_trigger = millis();
-  if (iaqSensor.run()) { // If new data is available
-    digitalWrite(LED_BUILTIN, LOW);
-    output = String(time_trigger);
-    output += ", " + String(iaqSensor.iaq);
-    output += ", " + String(iaqSensor.iaqAccuracy);
-    output += ", " + String(iaqSensor.staticIaq);
-    output += ", " + String(iaqSensor.co2Equivalent);
-    output += ", " + String(iaqSensor.breathVocEquivalent);
-    output += ", " + String(iaqSensor.rawTemperature);
-    output += ", " + String(iaqSensor.pressure);
-    output += ", " + String(iaqSensor.rawHumidity);
-    output += ", " + String(iaqSensor.gasResistance);
-    output += ", " + String(iaqSensor.stabStatus);
-    output += ", " + String(iaqSensor.runInStatus);
-    output += ", " + String(iaqSensor.temperature);
-    output += ", " + String(iaqSensor.humidity);
-    output += ", " + String(iaqSensor.gasPercentage);
-
-    int moisture = analogRead(A6); // Assuming the moisture sensor is connected to A6
-    output += ", " + String(moisture);
+  output = "";
+  int moisture = analogRead(A6); // Assuming the moisture sensor is connected to A6
+ // unsigned long time_trigger = millis();
 
 
-
-    Serial.println(output);
-    digitalWrite(LED_BUILTIN, HIGH);
-  } else {
-    checkIaqSensorStatus();
-  }
 // check if a color reading is available
   while (! APDS.colorAvailable()) {
     delay(5);
@@ -96,16 +76,48 @@ void loop(void)
 
   // read the color
   APDS.readColor(r, g, b);
+  int ambientLight = r+g+b;
 
-  // print the values
-  Serial.print("r = ");
-  Serial.println(r);
-  Serial.print("g = ");
-  Serial.println(g);
-  Serial.print("b = ");
-  Serial.println(b);
-  Serial.println();
-  
+  if (iaqSensor.run()) { // If new data is available
+    digitalWrite(LED_BUILTIN, LOW);
+  //  output = String(time_trigger);
+    output += "IAQ: " + String(iaqSensor.iaq);
+    output += ", IAQ Acc: " + String(iaqSensor.iaqAccuracy);
+    output += ", staticIAQ: " + String(iaqSensor.staticIaq);
+    output += ", CO2: " + String(iaqSensor.co2Equivalent);
+    output += ", VOC: " + String(iaqSensor.breathVocEquivalent);
+    output += ", raw Temp: " + String(iaqSensor.rawTemperature);
+    output += ", pressure: " + String(iaqSensor.pressure);
+    output += ", rawHumidity: " + String(iaqSensor.rawHumidity);
+    output += ", gas Resistance (Ohm): " + String(iaqSensor.gasResistance);
+    output += ", stab status: " + String(iaqSensor.stabStatus);
+    output += ", run in status: " + String(iaqSensor.runInStatus);
+    output += ", heat compensated temp (°C): " + String(iaqSensor.temperature);
+    output += ", humidity (%RH): " + String(iaqSensor.humidity);
+    output += ", gas %: " + String(iaqSensor.gasPercentage);
+    output += ", moisture: " + String(moisture);
+    Serial.println();
+    // print the values
+    Serial.print("r = ");
+    Serial.println(r);
+    Serial.print("g = ");
+    Serial.println(g);
+    Serial.print("b = ");
+    Serial.println(b);
+    Serial.println();
+    Serial.print("Ambient Light: ");
+    Serial.println(ambientLight);
+    Serial.println();
+//    Serial.println(output);
+    digitalWrite(LED_BUILTIN, HIGH);
+  } else {
+    checkIaqSensorStatus();
+  }
+
+  /*
+
+  */
+  Serial.println(output);  
   delay(1000);
 
 }

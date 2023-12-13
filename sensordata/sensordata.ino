@@ -4,7 +4,19 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include "arduino_secrets.h"
+#include <ThingSpeak.h>
 #include <ArduinoJson.h>
+#include "mqtt_secrets.h"
+
+unsigned long myChannelNumber = SECRET_CH_ID;
+const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
+char ssid[] = WIFI_NAME;
+char pass[] = WIFI_PASSWORD;
+int status = WL_IDLE_STATUS;
+const char* mqttServer = "mqtt3.thingspeak.com";
+const int mqttPort = 1883;
+
+WiFiClient wifiClient;
 
 Bsec iaqSensor;
 
@@ -23,11 +35,15 @@ void setup(void)
 
   while(!Serial);
   pinMode(LED_BUILTIN, OUTPUT);
-  delay(1000);
+  //delay(1000);
 
   iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
  // output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
  // Serial.println(output);
+
+setupWiFi();
+ThingSpeak.begin(wifiClient);
+
   checkIaqSensorStatus();
 
   bsec_virtual_sensor_t sensorList[13] = {
@@ -67,14 +83,13 @@ void loop(void)
   int moisture = analogRead(A6); // Assuming the moisture sensor is connected to A6
  // unsigned long time_trigger = millis();
 
-
-// check if a color reading is available
+    //check if a colour reading is available
   while (! APDS.colorAvailable()) {
     delay(5);
   }
   int r, g, b;
 
-  // read the color
+  // read the colour
   APDS.readColor(r, g, b);
   int ambientLight = r+g+b;
 
@@ -87,7 +102,7 @@ void loop(void)
     output += ", CO2: " + String(iaqSensor.co2Equivalent);
     output += ", VOC: " + String(iaqSensor.breathVocEquivalent);
     output += ", raw Temp: " + String(iaqSensor.rawTemperature);
-    output += ", pressure: " + String(iaqSensor.pressure);
+    output += ", pressure (hPa): " + String(iaqSensor.pressure);
     output += ", rawHumidity: " + String(iaqSensor.rawHumidity);
     output += ", gas Resistance (Ohm): " + String(iaqSensor.gasResistance);
     output += ", stab status: " + String(iaqSensor.stabStatus);
@@ -97,6 +112,8 @@ void loop(void)
     output += ", gas %: " + String(iaqSensor.gasPercentage);
     output += ", moisture: " + String(moisture);
     Serial.println();
+    
+
     // print the values
     Serial.print("r = ");
     Serial.println(r);
@@ -114,11 +131,26 @@ void loop(void)
     checkIaqSensorStatus();
   }
 
-  /*
 
-  */
+float iaqAccuracy = iaqSensor.iaqAccuracy;
+float staticIAQ = iaqSensor.staticIaq;
+float humidity = iaqSensor.rawHumidity;
+float temperature = iaqSensor.temperature;
+
+ThingSpeak.setField(1, temperature);
+ThingSpeak.setField(2, humidity);
+ThingSpeak.setField(3, moisture);
+ThingSpeak.setField(4, staticIAQ);
+ThingSpeak.setField(5, ambientLight);
+int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+   if(x == 200){
+    Serial.println("Channel update successful.");
+  }
+  else{
+    Serial.println("Problem updating channel. HTTP error code " + String(x));
+  }
   Serial.println(output);  
-  delay(1000);
+  delay(15000);
 
 }
 
@@ -156,4 +188,26 @@ void errLeds(void)
   delay(100);
   digitalWrite(LED_BUILTIN, LOW);
   delay(100);
+}
+
+void setupWiFi() {
+ // check for the WiFi module:
+  if (WiFi.status() == WL_NO_MODULE) {
+    Serial.println("Communication with WiFi module failed!");
+    // don't continue
+    while (true);
+  }
+
+  // attempt to connect to WiFi network:
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.println(ssid);
+    // Connect to WPA/WPA2 network:
+    status = WiFi.begin(ssid, pass);
+
+    // wait 10 seconds for connection:
+    delay(INTERVAL);
+  }
+  // you're connected now, so print out the data:
+  Serial.println("You're connected to the network");
 }

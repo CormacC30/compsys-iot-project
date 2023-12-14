@@ -8,16 +8,25 @@
 #include <ArduinoJson.h>
 #include <BlynkSimpleWifi.h>
 
+//#include <WiFiNINA_HTTPClient.h>
+//#include <BlynkSimpleArduino.h>
+#define OFF false
+#define ON true
+
 unsigned long myChannelNumber = SECRET_CH_ID;
 const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
 char ssid[] = WIFI_NAME;
 char pass[] = WIFI_PASSWORD;
+char auth[] = BLYNK_AUTH_TOKEN;
 int status = WL_IDLE_STATUS;
 const char *mqttServer = "mqtt3.thingspeak.com";
 const int mqttPort = 1883;
+bool deviceState = OFF;
+
+String webhookURL;
 
 WiFiClient wifiClient;
-
+//WiFiNINA_HTTPClient client(wifiClient, "maker.ifttt.com");
 Bsec iaqSensor;
 
 int moisturePin = A6;
@@ -257,6 +266,44 @@ void setupWiFi()
   Serial.println("You're connected to the network");
 }
 
+// Add these functions to represent turning on and off your device
+void turnOnDevice() {
+  Blynk.virtualWrite(V0, 1);
+  Serial.println("Turning on the device");
+}
+
+void turnOffDevice() {
+  Blynk.virtualWrite(V0, 0);
+  Serial.println("Turning off the device");
+}
+
+void sendHttpRequest(String url) {
+  if (wifiClient.connect("maker.ifttt.com", 80)) {
+    // Make an HTTP request
+    wifiClient.print(String("POST ") + url + " HTTP/1.1\r\n" +
+                     "Host: maker.ifttt.com\r\n" +
+                     "Connection: keep-alive\r\n\r\n");
+    delay(10);
+  }
+}
+
+void triggerTurnOff() {
+  Serial.println("Triggering turn-off event...");
+  
+  String url = "https://maker.ifttt.com/trigger/turn-off/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
+  Serial.print("Sending HTTP request to URL: ");
+  Serial.println(url);
+
+  sendHttpRequest(url);
+
+  Serial.println("HTTP request sent.");
+}
+
+void triggerTurnOn() {
+  String url = "https://maker.ifttt.com/trigger/dehumidify/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
+  sendHttpRequest(url);
+}
+
 void writeTemperature()
 {
   float temperature = iaqSensor.temperature;
@@ -287,4 +334,33 @@ void writeAmbientLight()
   APDS.readColor(r, g, b);
   int ambientLight = r + g + b;
   Blynk.virtualWrite(V5, ambientLight);
+}
+
+BLYNK_WRITE(V0) {
+  int buttonState = param.asInt();
+
+  if (buttonState == 1) {
+    // Button is pressed
+    if (deviceState == OFF) {
+      // Turn on the device
+      turnOnDevice();
+      deviceState = ON;
+    } else if (deviceState == ON && buttonState == 0) {
+      // Turn off the device
+      turnOffDevice();
+      triggerTurnOff();
+    }
+
+    // Update webhookURL here based on the current deviceState
+    webhookURL = "https://maker.ifttt.com/trigger/" + String(deviceState == ON ? "dehumidify" : "turn-off") + "/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
+
+    
+    // Synchronize the widget state with the device state
+    Blynk.virtualWrite(V0, deviceState);
+
+    //Blynk.virtualWrite(VPIN_WEBHOOK, webhookURL);
+
+    Serial.print("Sending webhook URL: ");
+Serial.println(webhookURL);
+  }
 }

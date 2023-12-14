@@ -9,16 +9,25 @@
 #include <BlynkSimpleWifi.h>
 
 unsigned long myChannelNumber = SECRET_CH_ID;
-const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
+const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
 char ssid[] = WIFI_NAME;
 char pass[] = WIFI_PASSWORD;
 int status = WL_IDLE_STATUS;
-const char* mqttServer = "mqtt3.thingspeak.com";
+const char *mqttServer = "mqtt3.thingspeak.com";
 const int mqttPort = 1883;
 
 WiFiClient wifiClient;
 
 Bsec iaqSensor;
+
+int moisturePin = A6;
+int moist;
+bool trigger = false;
+
+unsigned long previousMillisSerial = 0;
+unsigned long previousMillisUpdate = 0;
+const long serialInterval = 1000;   // Print to serial every 1 second
+const long updateInterval = 15000;  // Update Blynk and ThingSpeak every 15 seconds
 
 String output;
 
@@ -26,50 +35,45 @@ BlynkTimer timer;
 
 void checkIaqSensorStatus(void);
 void errLeds(void);
-
-int moisture = A6;
-int moist;
-bool trigger = false;
+void updateThingSpeak(void);
 
 void setup(void)
 {
-  Serial.begin(115200); //115200
+  Serial.begin(115200); // 115200
 
-  while(!Serial);
+  while (!Serial)
+    ;
   pinMode(LED_BUILTIN, OUTPUT);
-  //delay(1000);
 
   iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
- // output = "\nBSEC library version " + String(iaqSensor.version.major) + "." + String(iaqSensor.version.minor) + "." + String(iaqSensor.version.major_bugfix) + "." + String(iaqSensor.version.minor_bugfix);
- // Serial.println(output);
 
-setupWiFi();
-ThingSpeak.begin(wifiClient);
+  setupWiFi();
+  ThingSpeak.begin(wifiClient);
 
   checkIaqSensorStatus();
 
   bsec_virtual_sensor_t sensorList[13] = {
-    BSEC_OUTPUT_IAQ,
-    BSEC_OUTPUT_STATIC_IAQ,
-    BSEC_OUTPUT_CO2_EQUIVALENT,
-    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
-    BSEC_OUTPUT_RAW_TEMPERATURE,
-    BSEC_OUTPUT_RAW_PRESSURE,
-    BSEC_OUTPUT_RAW_HUMIDITY,
-    BSEC_OUTPUT_RAW_GAS,
-    BSEC_OUTPUT_STABILIZATION_STATUS,
-    BSEC_OUTPUT_RUN_IN_STATUS,
-    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
-    BSEC_OUTPUT_GAS_PERCENTAGE
-  };
+      BSEC_OUTPUT_IAQ,
+      BSEC_OUTPUT_STATIC_IAQ,
+      BSEC_OUTPUT_CO2_EQUIVALENT,
+      BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
+      BSEC_OUTPUT_RAW_TEMPERATURE,
+      BSEC_OUTPUT_RAW_PRESSURE,
+      BSEC_OUTPUT_RAW_HUMIDITY,
+      BSEC_OUTPUT_RAW_GAS,
+      BSEC_OUTPUT_STABILIZATION_STATUS,
+      BSEC_OUTPUT_RUN_IN_STATUS,
+      BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+      BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+      BSEC_OUTPUT_GAS_PERCENTAGE};
 
   iaqSensor.updateSubscription(sensorList, 13, BSEC_SAMPLE_RATE_LP);
   checkIaqSensorStatus();
 
-    pinMode(moisture,INPUT);
+  pinMode(moisturePin, INPUT);
 
-if (!APDS.begin()) {
+  if (!APDS.begin())
+  {
     Serial.println("Error initializing APDS-9960 sensor.");
   }
 
@@ -81,31 +85,30 @@ if (!APDS.begin()) {
   timer.setInterval(2000L, writeIAQ);
   timer.setInterval(2000L, writeAmbientLight);
   timer.setInterval(2000L, writeMoisture);
-  // Print the header
- // output = "Timestamp [ms], IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
- //  output = "IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
-//Serial.println(output);
 }
 
 void loop(void)
 {
-  output = "";
-  int moisture = analogRead(A6); // Assuming the moisture sensor is connected to A6
- // unsigned long time_trigger = millis();
+  unsigned long currentMillis = millis();
 
-    //check if a colour reading is available
-  while (! APDS.colorAvailable()) {
-    delay(5);
-  }
-  int r, g, b;
+  // Print to serial every 1 second
+  if (currentMillis - previousMillisSerial >= serialInterval)
+  {
+    previousMillisSerial = currentMillis;
+    output = "";
+    int moisture = analogRead(moisturePin);
 
-  // read the colour
-  APDS.readColor(r, g, b);
-  int ambientLight = r+g+b;
+    while (!APDS.colorAvailable())
+    {
+      delay(5);
+    }
+    int r, g, b;
+    APDS.readColor(r, g, b);
+    int ambientLight = r + g + b;
 
-  if (iaqSensor.run()) { // If new data is available
-    digitalWrite(LED_BUILTIN, LOW);
-  //  output = String(time_trigger);
+    if (iaqSensor.run())
+    {
+      digitalWrite(LED_BUILTIN, LOW);
     output += "IAQ: " + String(iaqSensor.iaq);
     output += ", IAQ Acc: " + String(iaqSensor.iaqAccuracy);
     output += ", staticIAQ: " + String(iaqSensor.staticIaq);
@@ -121,72 +124,90 @@ void loop(void)
     output += ", humidity (%RH): " + String(iaqSensor.humidity);
     output += ", gas %: " + String(iaqSensor.gasPercentage);
     output += ", moisture: " + String(moisture);
-    Serial.println();
-    
-    // print the values
-    Serial.print("r = ");
-    Serial.println(r);
-    Serial.print("g = ");
-    Serial.println(g);
-    Serial.print("b = ");
-    Serial.println(b);
-    Serial.println();
-    Serial.print("Ambient Light: ");
-    Serial.println(ambientLight);
-    Serial.println();
-//    Serial.println(output);
-    digitalWrite(LED_BUILTIN, HIGH);
-  } else {
-    checkIaqSensorStatus();
+
+      // Print the values
+      Serial.print("r = ");
+      Serial.println(r);
+      Serial.print("g = ");
+      Serial.println(g);
+      Serial.print("b = ");
+      Serial.println(b);
+      Serial.println();
+      Serial.print("Ambient Light: ");
+      Serial.println(ambientLight);
+      Serial.println();
+      Serial.println(output);
+      digitalWrite(LED_BUILTIN, HIGH);
+    }
+    else
+    {
+      checkIaqSensorStatus();
+    }
   }
 
-
-float iaqAccuracy = iaqSensor.iaqAccuracy;
-float staticIAQ = iaqSensor.staticIaq;
-float humidity = iaqSensor.rawHumidity;
-float temperature = iaqSensor.temperature;
-
-ThingSpeak.setField(1, temperature);
-ThingSpeak.setField(2, humidity);
-ThingSpeak.setField(3, moisture);
-ThingSpeak.setField(4, staticIAQ);
-ThingSpeak.setField(5, ambientLight);
-int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-   if(x == 200){
-    Serial.println("Channel update successful.");
+  // Update Blynk and ThingSpeak every 15 seconds
+  if (currentMillis - previousMillisUpdate >= updateInterval)
+  {
+    previousMillisUpdate = currentMillis;
+    updateThingSpeak();
   }
-  else{
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
-  }
-  Serial.println(output);  
-  delay(15000);
 
   Blynk.run();
   timer.run();
+}
 
+void updateThingSpeak()
+{
+  float iaqAccuracy = iaqSensor.iaqAccuracy;
+  float staticIAQ = iaqSensor.staticIaq;
+  float humidity = iaqSensor.rawHumidity;
+  float temperature = iaqSensor.temperature;
+
+  ThingSpeak.setField(1, temperature);
+  ThingSpeak.setField(2, humidity);
+  ThingSpeak.setField(3, A6);
+  ThingSpeak.setField(4, staticIAQ);
+
+  int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+  if (x == 200)
+  {
+    Serial.println("Channel update successful.");
+  }
+  else
+  {
+    Serial.println("Problem updating channel. HTTP error code " + String(x));
+  }
 }
 
 void checkIaqSensorStatus(void)
 {
-  if (iaqSensor.bsecStatus != BSEC_OK) {
-    if (iaqSensor.bsecStatus < BSEC_OK) {
+  if (iaqSensor.bsecStatus != BSEC_OK)
+  {
+    if (iaqSensor.bsecStatus < BSEC_OK)
+    {
       output = "BSEC error code : " + String(iaqSensor.bsecStatus);
       Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
-    } else {
+    }
+    else
+    {
       output = "BSEC warning code : " + String(iaqSensor.bsecStatus);
       Serial.println(output);
     }
   }
 
-  if (iaqSensor.bme68xStatus != BME68X_OK) {
-    if (iaqSensor.bme68xStatus < BME68X_OK) {
+  if (iaqSensor.bme68xStatus != BME68X_OK)
+  {
+    if (iaqSensor.bme68xStatus < BME68X_OK)
+    {
       output = "BME68X error code : " + String(iaqSensor.bme68xStatus);
       Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
-    } else {
+    }
+    else
+    {
       output = "BME68X warning code : " + String(iaqSensor.bme68xStatus);
       Serial.println(output);
     }
@@ -202,16 +223,20 @@ void errLeds(void)
   delay(100);
 }
 
-void setupWiFi() {
- // check for the WiFi module:
-  if (WiFi.status() == WL_NO_MODULE) {
+void setupWiFi()
+{
+  // check for the WiFi module:
+  if (WiFi.status() == WL_NO_MODULE)
+  {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
-    while (true);
+    while (true)
+      ;
   }
 
   // attempt to connect to WiFi network:
-  while (status != WL_CONNECTED) {
+  while (status != WL_CONNECTED)
+  {
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network:
@@ -221,39 +246,45 @@ void setupWiFi() {
     delay(1000);
   }
 
-  if (WiFi.status() == WL_NO_SHIELD) {
-Serial.println("WiFi shield not present");
-// don't continue:
-while (true);
-}
+  if (WiFi.status() == WL_NO_SHIELD)
+  {
+    Serial.println("WiFi shield not present");
+    // don't continue:
+    while (true)
+      ;
+  }
   // you're connected now, so print out the data:
   Serial.println("You're connected to the network");
 }
 
-
-void writeTemperature() {
+void writeTemperature()
+{
   float temperature = iaqSensor.temperature;
   Blynk.virtualWrite(V1, temperature);
 }
 
-void writeHumidity() {
+void writeHumidity()
+{
   float humidity = iaqSensor.humidity;
   Blynk.virtualWrite(V2, humidity);
 }
 
-void writeIAQ() {
+void writeIAQ()
+{
   float airQuality = iaqSensor.staticIaq;
   Blynk.virtualWrite(V3, airQuality);
 }
 
-void writeMoisture() {
-  float moisture = analogRead(A6);
+void writeMoisture()
+{
+  float moisture = analogRead(moisturePin);
   Blynk.virtualWrite(V4, moisture);
 }
 
-void writeAmbientLight() {
+void writeAmbientLight()
+{
   int r, g, b;
   APDS.readColor(r, g, b);
-  int ambientLight = r+g+b;
+  int ambientLight = r + g + b;
   Blynk.virtualWrite(V5, ambientLight);
 }

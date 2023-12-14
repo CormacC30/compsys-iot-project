@@ -6,7 +6,7 @@
 #include "arduino_secrets.h"
 #include <ThingSpeak.h>
 #include <ArduinoJson.h>
-#include "mqtt_secrets.h"
+#include <BlynkSimpleWifi.h>
 
 unsigned long myChannelNumber = SECRET_CH_ID;
 const char * myWriteAPIKey = SECRET_WRITE_APIKEY;
@@ -21,6 +21,8 @@ WiFiClient wifiClient;
 Bsec iaqSensor;
 
 String output;
+
+BlynkTimer timer;
 
 void checkIaqSensorStatus(void);
 void errLeds(void);
@@ -71,6 +73,14 @@ if (!APDS.begin()) {
     Serial.println("Error initializing APDS-9960 sensor.");
   }
 
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+
+  // Setup a function to be called every second
+  timer.setInterval(2000L, writeTemperature);
+  timer.setInterval(2000L, writeHumidity);
+  timer.setInterval(2000L, writeIAQ);
+  timer.setInterval(2000L, writeAmbientLight);
+  timer.setInterval(2000L, writeMoisture);
   // Print the header
  // output = "Timestamp [ms], IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
  //  output = "IAQ, IAQ accuracy, Static IAQ, CO2 equivalent, breath VOC equivalent, raw temp[°C], pressure [hPa], raw relative humidity [%], gas [Ohm], Stab Status, run in status, comp temp[°C], comp humidity [%], gas percentage, Light R, Light G, Light B, Moisture";
@@ -152,6 +162,9 @@ int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
   Serial.println(output);  
   delay(15000);
 
+  Blynk.run();
+  timer.run();
+
 }
 
 void checkIaqSensorStatus(void)
@@ -206,8 +219,42 @@ void setupWiFi() {
     status = WiFi.begin(ssid, pass);
 
     // wait 10 seconds for connection:
-    delay(INTERVAL);
+    delay(1000);
   }
+
+  if (WiFi.status() == WL_NO_SHIELD) {
+Serial.println("WiFi shield not present");
+// don't continue:
+while (true);
+}
   // you're connected now, so print out the data:
   Serial.println("You're connected to the network");
+}
+
+
+void writeTemperature() {
+  float temperature = iaqSensor.temperature;
+  Blynk.virtualWrite(V1, temperature);
+}
+
+void writeHumidity() {
+  float humidity = iaqSensor.humidity;
+  Blynk.virtualWrite(V2, humidity);
+}
+
+void writeIAQ() {
+  float airQuality = iaqSensor.staticIaq;
+  Blynk.virtualWrite(V3, airQuality);
+}
+
+void writeMoisture() {
+  float moisture = analogRead(A6);
+  Blynk.virtualWrite(V4, moisture);
+}
+
+void writeAmbientLight() {
+  int r, g, b;
+  APDS.readColor(r, g, b);
+  int ambientLight = r+g+b;
+  Blynk.virtualWrite(V5, ambientLight);
 }

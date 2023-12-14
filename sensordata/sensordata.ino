@@ -123,7 +123,6 @@ void loop(void)
     output += ", moisture: " + String(moisture);
     Serial.println();
     
-
     // print the values
     Serial.print("r = ");
     Serial.println(r);

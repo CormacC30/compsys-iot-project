@@ -7,11 +7,16 @@
 #include <ThingSpeak.h>
 #include <ArduinoJson.h>
 #include <BlynkSimpleWifi.h>
+#include <ArduinoHttpClient.h>
 
-//#include <WiFiNINA_HTTPClient.h>
-//#include <BlynkSimpleArduino.h>
 #define OFF false
 #define ON true
+
+const char* iftttKey = "dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J"; // Replace with your IFTTT key
+const char* iftttEventOn = "dehumidify";
+const char* iftttEventOff = "turn-off";
+const char* iftttHost = "maker.ifttt.com";
+const int iftttPort = 80;
 
 unsigned long myChannelNumber = SECRET_CH_ID;
 const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
@@ -26,17 +31,19 @@ bool deviceState = OFF;
 String webhookURL;
 
 WiFiClient wifiClient;
-//WiFiNINA_HTTPClient client(wifiClient, "maker.ifttt.com");
-Bsec iaqSensor;
 
-int moisturePin = A6;
+HttpClient client(wifiClient, iftttHost, iftttPort);
+
+Bsec iaqSensor; // Bsec sensor for air quality
+
+int moisturePin = A6; //moisture sensor on grove input A6
 int moist;
 bool trigger = false;
 
 unsigned long previousMillisSerial = 0;
 unsigned long previousMillisUpdate = 0;
-const long serialInterval = 1000;   // Print to serial every 1 second
-const long updateInterval = 15000;  // Update Blynk and ThingSpeak every 15 seconds
+const long serialInterval = 1000;   // Print to serial monitor every second
+const long updateInterval = 15000;  // Update ThingSpeak every 15 seconds
 
 String output;
 
@@ -265,43 +272,34 @@ void setupWiFi()
   // you're connected now, so print out the data:
   Serial.println("You're connected to the network");
 }
+// function to construct the http request for ifttt trigger
+void sendIftttRequest(const char* event) {
+  String url = "/trigger/" + String(event) + "/json/with/key/" + iftttKey;
+
+  if (client.connect(iftttHost, iftttPort)) {
+    client.print(String("POST ") + url + " HTTP/1.1\r\n" +
+                 "Host: " + iftttHost + "\r\n" +
+                 "Connection: close\r\n\r\n");
+    delay(10);
+    client.stop();
+  }
+}
 
 // Add these functions to represent turning on and off your device
 void turnOnDevice() {
   Blynk.virtualWrite(V0, 1);
   Serial.println("Turning on the device");
+  
+  // Send request to IFTTT to trigger "dehumidify" event
+  sendIftttRequest(iftttEventOn);
 }
 
 void turnOffDevice() {
   Blynk.virtualWrite(V0, 0);
   Serial.println("Turning off the device");
-}
-
-void sendHttpRequest(String url) {
-  if (wifiClient.connect("maker.ifttt.com", 80)) {
-    // Make an HTTP request
-    wifiClient.print(String("POST ") + url + " HTTP/1.1\r\n" +
-                     "Host: maker.ifttt.com\r\n" +
-                     "Connection: keep-alive\r\n\r\n");
-    delay(10);
-  }
-}
-
-void triggerTurnOff() {
-  Serial.println("Triggering turn-off event...");
   
-  String url = "https://maker.ifttt.com/trigger/turn-off/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
-  Serial.print("Sending HTTP request to URL: ");
-  Serial.println(url);
-
-  sendHttpRequest(url);
-
-  Serial.println("HTTP request sent.");
-}
-
-void triggerTurnOn() {
-  String url = "https://maker.ifttt.com/trigger/dehumidify/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
-  sendHttpRequest(url);
+  // Send request to IFTTT to trigger "turn-off" event
+  sendIftttRequest(iftttEventOff);
 }
 
 void writeTemperature()
@@ -344,23 +342,19 @@ BLYNK_WRITE(V0) {
     if (deviceState == OFF) {
       // Turn on the device
       turnOnDevice();
+
       deviceState = ON;
-    } else if (deviceState == ON && buttonState == 0) {
+    } 
+    }
+    else if (buttonState == 0) {
+      if (deviceState == ON) {
       // Turn off the device
       turnOffDevice();
-      triggerTurnOff();
+
+      deviceState = OFF;  // Update deviceState only when turning off
+      }
     }
-
-    // Update webhookURL here based on the current deviceState
-    webhookURL = "https://maker.ifttt.com/trigger/" + String(deviceState == ON ? "dehumidify" : "turn-off") + "/json/with/key/dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J";
-
-    
-    // Synchronize the widget state with the device state
-    Blynk.virtualWrite(V0, deviceState);
-
-    //Blynk.virtualWrite(VPIN_WEBHOOK, webhookURL);
-
-    Serial.print("Sending webhook URL: ");
-Serial.println(webhookURL);
-  }
 }
+
+
+

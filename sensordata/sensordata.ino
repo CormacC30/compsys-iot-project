@@ -103,6 +103,18 @@ void setup(void)
   timer.setInterval(2000L, writeMoisture);
 }
 
+int getAmbientLight() {
+      while (!APDS.colorAvailable())
+    {
+      delay(5);
+    }
+    int r, g, b;
+    APDS.readColor(r, g, b);
+    int ambientLight = r + g + b;
+    return ambientLight;
+}
+
+
 void loop(void)
 {
   unsigned long currentMillis = millis();
@@ -114,13 +126,7 @@ void loop(void)
     output = "";
     int moisture = analogRead(moisturePin);
 
-    while (!APDS.colorAvailable())
-    {
-      delay(5);
-    }
-    int r, g, b;
-    APDS.readColor(r, g, b);
-    int ambientLight = r + g + b;
+    int ambientLight = getAmbientLight();
 
     if (iaqSensor.run())
     {
@@ -142,13 +148,6 @@ void loop(void)
     output += ", moisture: " + String(moisture);
 
       // Print the values
-      Serial.print("r = ");
-      Serial.println(r);
-      Serial.print("g = ");
-      Serial.println(g);
-      Serial.print("b = ");
-      Serial.println(b);
-      Serial.println();
       Serial.print("Ambient Light: ");
       Serial.println(ambientLight);
       Serial.println();
@@ -178,11 +177,13 @@ void updateThingSpeak()
   float staticIAQ = iaqSensor.staticIaq;
   float humidity = iaqSensor.rawHumidity;
   float temperature = iaqSensor.temperature;
+  int ambientLight = getAmbientLight();
 
   ThingSpeak.setField(1, temperature);
   ThingSpeak.setField(2, humidity);
   ThingSpeak.setField(3, A6);
   ThingSpeak.setField(4, staticIAQ);
+  ThingSpeak.setField(5, ambientLight);
 
   int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
   if (x == 200)
@@ -328,9 +329,7 @@ void writeMoisture()
 
 void writeAmbientLight()
 {
-  int r, g, b;
-  APDS.readColor(r, g, b);
-  int ambientLight = r + g + b;
+  int ambientLight = getAmbientLight();
   Blynk.virtualWrite(V5, ambientLight);
 }
 

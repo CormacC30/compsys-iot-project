@@ -4,7 +4,7 @@ export const aboutController = {
         title: "About Mould-O-Matic",
       };
       console.log("about rendering");
-      response.render("about-view", viewData);
+      response.render("about", viewData);
     },
   };
   

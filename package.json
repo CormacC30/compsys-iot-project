@@ -1,0 +1,24 @@
+{
+  "name": "iot-project",
+  "version": "1.0.0",
+  "description": "Node.js app for Compsys IoT Project",
+  "main": "server.js",
+  "scripts": {
+    "test": "Hello mould-o-matic"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CormacC30/compsys-iot-project.git"
+  },
+  "author": "Cormac Costello",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CormacC30/compsys-iot-project/issues"
+  },
+  "homepage": "https://github.com/CormacC30/compsys-iot-project#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.3",
+    "express-handlebars": "^7.1.2"
+  }
+}

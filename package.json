@@ -21,6 +21,7 @@
     "axios": "^1.6.2",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.3",
-    "express-handlebars": "^7.1.2"
+    "express-handlebars": "^7.1.2",
+    "firebase": "^10.7.1"
   }
 }

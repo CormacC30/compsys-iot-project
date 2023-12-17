@@ -8,12 +8,12 @@
 #include <ArduinoJson.h>
 #include <BlynkSimpleWifi.h>
 #include <ArduinoHttpClient.h>
-#include <Firebase_Arduino_WiFiNINA.h>
+// #include <Firebase_Arduino_WiFiNINA.h>
 
 #define OFF false
 #define ON true
 
-const char* iftttKey = "dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J"; // Replace with your IFTTT key
+const char* iftttKey = "dhUEVYI8vPSvFOdJBIxPJh_IIeYmkDLINMy7egFHl0J"; 
 const char* iftttEventOn = "dehumidify";
 const char* iftttEventOff = "turn-off";
 const char* iftttHost = "maker.ifttt.com";
@@ -24,6 +24,8 @@ const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
 char ssid[] = WIFI_NAME;
 char pass[] = WIFI_PASSWORD;
 char auth[] = BLYNK_AUTH_TOKEN;
+//char dburl[] = DATABASE_URL;
+//char dbsecret[] =  DATABASE_SECRET;
 int status = WL_IDLE_STATUS;
 const char *mqttServer = "mqtt3.thingspeak.com";
 const int mqttPort = 1883;
@@ -53,6 +55,8 @@ BlynkTimer timer;
 void checkIaqSensorStatus(void);
 void errLeds(void);
 void updateThingSpeak(void);
+
+// FirebaseData firebaseData;
 
 void setup(void)
 {
@@ -102,6 +106,9 @@ void setup(void)
   timer.setInterval(2000L, writeIAQ);
   timer.setInterval(2000L, writeAmbientLight);
   timer.setInterval(2000L, writeMoisture);
+
+//  Firebase.begin(dburl, dbsecret, ssid, pass);
+//  Firebase.reconnectWiFi(true); 
 }
 
 int getAmbientLight() {
@@ -161,15 +168,18 @@ void loop(void)
     }
   }
 
-  // Update Blynk and ThingSpeak every 15 seconds
+  // Update ThingSpeak every 15 seconds
+  
   if (currentMillis - previousMillisUpdate >= updateInterval)
   {
     previousMillisUpdate = currentMillis;
     updateThingSpeak();
   }
-
+  
+  // sendToDB();
   Blynk.run();
   timer.run();
+  delay(1000);
 }
 
 void updateThingSpeak()
@@ -196,6 +206,35 @@ void updateThingSpeak()
     Serial.println("Problem updating channel. HTTP error code " + String(x));
   }
 }
+
+/*
+void sendToDB() {
+
+  float iaqAccuracy = iaqSensor.iaqAccuracy;
+  float staticIAQ = iaqSensor.staticIaq;
+  float humidity = iaqSensor.rawHumidity;
+  float temperature = iaqSensor.temperature;
+  int ambientLight = getAmbientLight();
+  int moisture = analogRead(moisturePin);
+
+String path = "/";
+String jsonString;
+
+jsonString = "{\"temperature\":" + String(temperature) +
+             ",\"humidity\":" + String(humidity) +
+             ",\"air_quality\":" + String(staticIAQ) +
+             ",\"ambient_light\":" + String(ambientLight) + 
+             ",\"moisture\":" + String(moisture) + "}";
+
+if(Firebase.pushJSON(firebaseData, path, jsonString)) {
+  Serial.println("path: " + firebaseData.dataPath());
+} else {
+  Serial.println("error, " + firebaseData.errorReason());
+}
+
+  Serial.println("Pushing json... ");
+}
+*/
 
 void checkIaqSensorStatus(void)
 {

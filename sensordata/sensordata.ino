@@ -8,6 +8,7 @@
 #include <ArduinoJson.h>
 #include <BlynkSimpleWifi.h>
 #include <ArduinoHttpClient.h>
+#include <Firebase_Arduino_WiFiNINA.h>
 
 #define OFF false
 #define ON true

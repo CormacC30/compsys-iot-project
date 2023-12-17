@@ -3,6 +3,12 @@
 <section class="section">
   <h1 class="title has-text-centered">Your Mould-O-Matic Dashboard</h1>
 
+<div class="buttons">
+    <form action="/trigger-ifttt" method="post">
+        <button class="button is-danger is-active" type="submit">Trigger IFTTT Event</button>
+    </form>
+</div>
+
 <div class="columns">
     <div class="column">
         <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/1?bgcolor=%23edd8c7&color=%23d62020&results=1000&title=Temperature&yaxis=%C2%B0C"></iframe>

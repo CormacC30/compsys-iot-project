@@ -11,10 +11,13 @@ import { router } from "./routes.js";
 import bodyParser from "body-parser";
 import fileUpload from "express-fileupload";
 import { engine } from "express-handlebars";
+import axios from "axios";
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(fileUpload());
+
+app.use(bodyParser.json());
 app.engine(".hbs", engine({ extname: ".hbs"}));
 app.set("view engine", ".hbs");
 app.set("views", path.join(__dirname, "views"));  // Use path.join to ensure correct path

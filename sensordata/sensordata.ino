@@ -179,7 +179,7 @@ void loop(void)
   // sendToDB();
   Blynk.run();
   timer.run();
-  delay(1000);
+
 }
 
 void updateThingSpeak()

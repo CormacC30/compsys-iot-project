@@ -54,23 +54,3 @@ async updateDehumidifier(request, response) {
     }
   },
 };
-/*
-var blynk = new Blynk('-8LxkAzVWEMcC1JJz4qkoRQEZLhYOKM7', {
-    addr: blynk.cloud,
-});
-
-// Function to read data from Blynk and return a Promise
-function readDataFromBlynk(pin) {
-    return new Promise((resolve, reject) => {
-        // Use Blynk's read functions here
-        // For example, if you have a virtual pin V1 for temperature, you can use:
-        blynk.virtualRead(pin, (value) => {
-            if (value !== null) {
-                resolve(value);
-            } else {
-                reject(new Error('Failed to read data from Blynk.'));
-            }
-        });
-    });
-}
-*/

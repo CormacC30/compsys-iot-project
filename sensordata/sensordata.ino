@@ -54,7 +54,7 @@ BlynkTimer timer;
 
 void checkIaqSensorStatus(void);
 void errLeds(void);
-void updateThingSpeak(void);
+//void updateThingSpeak(void);
 
 // FirebaseData firebaseData;
 
@@ -69,7 +69,7 @@ void setup(void)
   iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
 
   setupWiFi();
-  ThingSpeak.begin(wifiClient);
+ // ThingSpeak.begin(wifiClient);
 
   checkIaqSensorStatus();
 
@@ -156,32 +156,35 @@ void loop(void)
     output += ", moisture: " + String(moisture);
 
       // Print the values
-      Serial.print("Ambient Light: ");
-      Serial.println(ambientLight);
-      Serial.println();
-      Serial.println(output);
+      //Serial.print("Ambient Light: ");
+      //Serial.println(ambientLight);
+      //Serial.println();
+      //Serial.println(output);
       digitalWrite(LED_BUILTIN, HIGH);
     }
     else
     {
       checkIaqSensorStatus();
     }
+
+
+  
   }
 
   // Update ThingSpeak every 15 seconds
-  
+  /*
   if (currentMillis - previousMillisUpdate >= updateInterval)
   {
     previousMillisUpdate = currentMillis;
     updateThingSpeak();
   }
-  
-  // sendToDB();
+  */
+  sendJSONData();
   Blynk.run();
   timer.run();
 
 }
-
+/*
 void updateThingSpeak()
 {
   float iaqAccuracy = iaqSensor.iaqAccuracy;
@@ -206,35 +209,27 @@ void updateThingSpeak()
     Serial.println("Problem updating channel. HTTP error code " + String(x));
   }
 }
-
-/*
-void sendToDB() {
-
-  float iaqAccuracy = iaqSensor.iaqAccuracy;
-  float staticIAQ = iaqSensor.staticIaq;
-  float humidity = iaqSensor.rawHumidity;
-  float temperature = iaqSensor.temperature;
-  int ambientLight = getAmbientLight();
-  int moisture = analogRead(moisturePin);
-
-String path = "/";
-String jsonString;
-
-jsonString = "{\"temperature\":" + String(temperature) +
-             ",\"humidity\":" + String(humidity) +
-             ",\"air_quality\":" + String(staticIAQ) +
-             ",\"ambient_light\":" + String(ambientLight) + 
-             ",\"moisture\":" + String(moisture) + "}";
-
-if(Firebase.pushJSON(firebaseData, path, jsonString)) {
-  Serial.println("path: " + firebaseData.dataPath());
-} else {
-  Serial.println("error, " + firebaseData.errorReason());
-}
-
-  Serial.println("Pushing json... ");
-}
 */
+
+void sendJSONData() {
+  DynamicJsonDocument jsonDoc(512);
+
+  // Add data to the JSON document
+  jsonDoc["temperature"] = iaqSensor.temperature;
+  jsonDoc["humidity"] = iaqSensor.humidity;
+  jsonDoc["air_quality"] = iaqSensor.staticIaq;
+  jsonDoc["ambient_light"] = getAmbientLight();
+  jsonDoc["moisture"] = analogRead(moisturePin);
+
+  // Serialize JSON to a String
+  String jsonString;
+  serializeJson(jsonDoc, jsonString);
+
+  // Send JSON data through the serial port
+  Serial.println(jsonString);
+  delay(1000);
+}
+
 
 void checkIaqSensorStatus(void)
 {
@@ -243,14 +238,14 @@ void checkIaqSensorStatus(void)
     if (iaqSensor.bsecStatus < BSEC_OK)
     {
       output = "BSEC error code : " + String(iaqSensor.bsecStatus);
-      Serial.println(output);
+      //Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
     }
     else
     {
       output = "BSEC warning code : " + String(iaqSensor.bsecStatus);
-      Serial.println(output);
+      //Serial.println(output);
     }
   }
 
@@ -259,14 +254,14 @@ void checkIaqSensorStatus(void)
     if (iaqSensor.bme68xStatus < BME68X_OK)
     {
       output = "BME68X error code : " + String(iaqSensor.bme68xStatus);
-      Serial.println(output);
+      //Serial.println(output);
       for (;;)
         errLeds(); /* Halt in case of failure */
     }
     else
     {
       output = "BME68X warning code : " + String(iaqSensor.bme68xStatus);
-      Serial.println(output);
+      //Serial.println(output);
     }
   }
 }

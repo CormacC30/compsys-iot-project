@@ -1,7 +1,8 @@
 import * as https from "https";
 
 const authToken = process.env.BLYNK_AUTH_TOKEN; 
-console.log('Blynk Auth Token:', process.env.BLYNK_AUTH_TOKEN);
+//console.log('Blynk Auth Token:', process.env.BLYNK_AUTH_TOKEN);
+//console.log('All Environment Variables:', process.env);
 const pinNumber = 1; // Replace with the desired virtual pin number
 
 const options = {

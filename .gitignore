@@ -52,4 +52,14 @@ jspm_packages
 package-lock.json
 
 # .env files
+.env# .gitignore
+
+
+# Virtual environment
+.venv/
+venv/
+env/
+
 .env
+
+mould-o-matic-ebf187b7f188.json

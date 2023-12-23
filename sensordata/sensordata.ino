@@ -179,6 +179,7 @@ void loop(void)
     updateThingSpeak();
   }
   */
+ // Serial.println(output);
   sendJSONData();
   Blynk.run();
   timer.run();

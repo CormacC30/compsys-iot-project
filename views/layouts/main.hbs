@@ -8,6 +8,37 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   <script src="https://kit.fontawesome.com/dd084b05a9.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/blynk-library@0.5.4/dist/blynk.browser.js"></script>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
+<script>
+  const socket = io('http://localhost:4000'); 
+
+  socket.on('open', (event) => {
+    console.log('WebSocket connection opened');
+  });
+
+  socket.on('initial', (data) => {
+    console.log('Received initial data:', data);
+    // Handle initial data
+  });
+
+  socket.on('update', (data) => {
+    console.log('Received real-time update:', data);
+    // Handle real-time updates
+    document.getElementById('temperature').innerText = `Temperature: ${data.temperature}`;
+    document.getElementById('humidity').innerText = `Humidity: ${data.humidity}`;
+    document.getElementById('airQuality').innerText = `Air Quality: ${data.airQuality}`;
+    document.getElementById('ambientLight').innerText = `Ambient Light: ${data.ambientLight}`;
+    document.getElementById('moisture').innerText = `Moisture: ${data.moisture}`;
+  });
+
+  // Connection closed
+  socket.on('close', (event) => {
+    console.log('WebSocket connection closed');
+  });
+</script>
+
 </head>
 
 <body class="has-background-info-dark">

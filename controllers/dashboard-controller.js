@@ -1,6 +1,23 @@
 //import { Blynk } from 'blynk-library';
 
 import { device } from "../models/device.js";
+import { sensorDataDB } from "../models/firebase.js";
+
+
+// Initialize an array to store the latest sensor data
+let latestSensorData = {
+  temperature: null,
+  humidity: null,
+  airQuality: null,
+  moisture: null,
+  ambientLight: null,
+};
+
+// Subscribe to real-time updates
+sensorDataDB.subscribe((data) => {
+  latestSensorData = data;
+  console.log("Real-time data updated:", latestSensorData); // Log the data for debugging
+});
 //const dehumidifierStatus = 1;
 export const dashboardController = {
 
@@ -13,12 +30,14 @@ export const dashboardController = {
             // Include the fetched data in the viewData object
             const viewData = {
               title: "Dashboard",
-              temperature: pinData.v1,
-              humidity: pinData.v2,
-              airQuality: pinData.v3,
-              moisture: pinData.v4,
-              ambientLight: pinData.v5,
+              
+              temperature: latestSensorData?.temperature,
+              humidity: latestSensorData?.humidity,
+              airQuality: latestSensorData?.airQuality,
+              moisture: latestSensorData?.moisture,
+              ambientLight: latestSensorData?.ambientLight,
               dehumidifierStatus: pinData.v0,
+              
             };
       
             console.log("rendering dashboard");

@@ -1,5 +1,7 @@
-import { getDatabase, ref, onValue } from 'firebase/database';
+import { getDatabase, ref, onValue, get, orderByKey, limitToLast } from 'firebase/database';
 import { initializeApp } from "firebase/app";
+import * as firebase from "firebase/database";
+
 const apiKey = process.env.API_KEY;
 const authDomain = process.env.AUTH_DOMAIN;
 const databaseURL = process.env.DATABASE_URL;
@@ -9,7 +11,7 @@ const messagingSenderId = process.env.MESSAGING_SENDER_ID;
 const appId = process.env.APP_ID;
 console.log("API_KEY:", process.env.API_KEY);
 console.log("AUTH_DOMAIN:", process.env.AUTH_DOMAIN);
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: apiKey,
   authDomain: authDomain,
   databaseURL: databaseURL,
@@ -18,7 +20,7 @@ const firebaseConfig = {
   messagingSenderId: messagingSenderId,
   appId: appId
 };
-console.log("Firebase config keys: ", firebaseConfig);
+//console.log("Firebase config keys: ", firebaseConfig);
 
 //admin.initializeApp(firebaseConfig);
 const app = initializeApp(firebaseConfig);
@@ -77,3 +79,40 @@ const notifySubscribers = (data) => {
     callback(data);
   });
 };
+
+export const fetchHistoricalData = async () => {
+  //const sensorsRef = ref(db, 'sensors');
+
+  try {
+    const snapshot = await get(sensorsRef);
+    const historicalData = [];
+
+    snapshot.forEach((childSnapshot) => {
+      const data = childSnapshot.val();
+      historicalData.push({
+        temperature: data.temperature,
+        timestamp: data.timestamp,
+      });
+    });
+
+    console.log('Fetched Historical Data:', historicalData);
+    return historicalData;
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+  }
+};
+/*
+// Example usage:
+fetchHistoricalData((data) => {
+  console.log('Fetched Historical Data:', data);
+  // You can do something with the historical data here
+});
+
+
+fetchHistoricalData()
+  .then((data) => {
+    console.log('Fetched Historical Data:', data);
+    renderChart(data); // Call your chart rendering function here
+  })
+  .catch((error) => console.error('Error:', error));
+*/

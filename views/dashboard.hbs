@@ -21,12 +21,16 @@
     <div>
         <p>dehu status: {{ dehumidifierStatus }}</p>
     </div>
+
     <!-- Add a form for the button with a hidden input field -->
 <form action="/updateDehumidifier" method="POST">
   <button type="submit" class="button {{#if dehumidifierStatus}}is-danger{{else}}is-success{{/if}}">
     {{#if dehumidifierStatus}}Turn Off Dehumidifier{{else}}Turn On Dehumidifier{{/if}}
   </button>
 </form>
+
+<canvas id="myChart" width="700" height="250"></canvas>
+
 <div class="columns">
     <div class="column">
         <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/1?bgcolor=%23edd8c7&color=%23d62020&results=1000&title=Temperature&yaxis=%C2%B0C"></iframe>

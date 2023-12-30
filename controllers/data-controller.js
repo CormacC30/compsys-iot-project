@@ -13,7 +13,7 @@ export const getHistoricalData = async (req, res) => {
 
     // Respond with a success message or other appropriate response
     const chartData = await analytics.chartData(historicalData);
-    console.log("chart data: ", chartData);
+    //console.log("chart data: ", chartData);
     const viewData = {
       title: "data-controller",
       chartData: chartData,

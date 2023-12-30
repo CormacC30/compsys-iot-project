@@ -1,31 +1,119 @@
-<!-- Your chart rendering logic here -->
+<!-- historical-data.hbs -->
 <h1>Your Historical Data</h1>
 
-<div class="box" id="chart"></div>
-<script>
-const data = {
-  labels: [
-  {{#each chartData.trendLabels}}
-  "{{this}}",
-  {{/each}}
-  ],
-  datasets: [
-  {
-    name: "Temperature", type: "line",
-    values: [
-    {{#each chartData.tempTrend}}
-    "{{this}}",
-    {{/each}}
-    ]
-  }
-  ]
-}
+<canvas id="chart"></canvas>
 
-const chart = new frappe.Chart("#chart", {
-  title: "Temperature Trend",
-  data: data,
-  type: 'line',
-  height: 250,
-  colors: ['red'],
-})
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script> <!-- Add the date adapter -->
+<script>
+  const ctx = document.getElementById('chart').getContext('2d');
+
+  const data = {
+    labels: [
+      {{#each chartData.trendLabels}}
+      "{{this}}",
+      {{/each}}
+    ],
+    datasets: [
+      {
+        label: 'Temperature',
+        yAxisID: 'Temperature',
+        data: [
+          {{#each chartData.tempTrend}}
+          {{this}},
+          {{/each}}
+        ],
+        borderColor: 'red',
+        backgroundColor: 'transparent',
+      },
+      {
+        label: 'Air Quality',
+        yAxisID: 'Air Quality',
+        data: [
+          {{#each chartData.airQualityTrend}}
+          {{this}},
+          {{/each}}
+        ],
+        borderColor: 'blue',
+        backgroundColor: 'transparent',
+      },
+      {
+        label: 'Humidity',
+        yAxisID: 'Humidity',
+        data: [
+          {{#each chartData.humidityTrend}}
+          {{this}},
+          {{/each}}
+        ],
+        borderColor: 'green',
+        backgroundColor: 'transparent',
+      },
+      {
+        label: 'Ambient Light',
+        yAxisID: 'Ambient Light',
+        data: [
+          {{#each chartData.ambientLightTrend}}
+          {{this}},
+          {{/each}}
+        ],
+        borderColor: 'orange',
+        backgroundColor: 'transparent',
+      },
+    ]
+  };
+
+  const options = {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'second',
+        },
+        title: {
+          display: true,
+          text: 'Time',
+        },
+      },
+       y: {
+        Temperature: {
+          type: 'linear',
+          position: 'left',
+          scaleLabel: {
+            display: true,
+            labelString: 'Temperature (°C)', // Title for the Temperature axis
+          },
+        },
+        'Air Quality': {
+          type: 'linear',
+          position: 'right',
+          scaleLabel: {
+            display: true,
+            labelString: 'Air Quality',
+          },
+        },
+        Humidity: {
+          type: 'linear',
+          position: 'right',
+          scaleLabel: {
+            display: true,
+            labelString: 'Humidity (%)',
+          },
+        },
+        'Ambient Light': {
+          type: 'linear',
+          position: 'right',
+          scaleLabel: {
+            display: true,
+            labelString: 'Ambient Light',
+          },
+        },
+      },
+    },
+  };
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: data,
+    options: options,
+  });
 </script>

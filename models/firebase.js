@@ -90,10 +90,10 @@ export const fetchHistoricalData = async () => {
       historicalData.push({
         timestamp: data.timestamp,
         temperature: data.temperature,
-        //humidity: data.humidity,
-        //airQuality: data.air_quality,
-       // ambientLight: data.ambient_light,
-        //moisture: data.moisture,
+        humidity: data.humidity,
+        airQuality: data.air_quality,
+        ambientLight: data.ambient_light,
+        moisture: data.moisture,
       });
     });
 

@@ -1,9 +1,31 @@
 <!-- Your chart rendering logic here -->
 <h1>Your Historical Data</h1>
 
-<div>
-  <canvas id="historicalChart"></canvas>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Historical data chart script -->
-<script src="../public/graph.js"></script>
+<div class="box" id="chart"></div>
+<script>
+const data = {
+  labels: [
+  {{#each chartData.trendLabels}}
+  "{{this}}",
+  {{/each}}
+  ],
+  datasets: [
+  {
+    name: "Temperature", type: "line",
+    values: [
+    {{#each chartData.tempTrend}}
+    "{{this}}",
+    {{/each}}
+    ]
+  }
+  ]
+}
+
+const chart = new frappe.Chart("#chart", {
+  title: "Temperature Trend",
+  data: data,
+  type: 'line',
+  height: 250,
+  colors: ['red'],
+})
+</script>

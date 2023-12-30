@@ -29,7 +29,16 @@
   </button>
 </form>
 
-<canvas id="myChart" width="700" height="250"></canvas>
+
+<form action="/historical-data" method="GET">
+  <button type="submit" class="button is-success">
+    Analyse Data
+  </button>
+</form>
+
+  <div id="historicalChartContainer">
+    <canvas id="historicalChart" width="600" height="300"></canvas>
+  </div>
 
 <div class="columns">
     <div class="column">

@@ -9,8 +9,8 @@ const projectId = process.env.PROJECT_ID;
 const storageBucket = process.env.STORAGE_BUCKET;
 const messagingSenderId = process.env.MESSAGING_SENDER_ID;
 const appId = process.env.APP_ID;
-console.log("API_KEY:", process.env.API_KEY);
-console.log("AUTH_DOMAIN:", process.env.AUTH_DOMAIN);
+//console.log("API_KEY:", process.env.API_KEY);
+//console.log("AUTH_DOMAIN:", process.env.AUTH_DOMAIN);
 export const firebaseConfig = {
   apiKey: apiKey,
   authDomain: authDomain,
@@ -48,12 +48,12 @@ onValue(sensorsRef, (snapshot) => {
     const latestReading = data[latestReadingKey];
 
     latestSensorData = {
+      timestamp: latestReading.timestamp,
       temperature: latestReading.temperature,
       humidity: latestReading.humidity,
       airQuality: latestReading.air_quality,
       ambientLight: latestReading.ambient_light,
       moisture: latestReading.moisture,
-      time: latestReading.timestamp,
     };
 
     // Notify subscribers
@@ -72,9 +72,7 @@ export const sensorDataDB = {
   subscribe: subscribeToSensorData,
 };
 
-// Internal function to notify subscribers
 const notifySubscribers = (data) => {
-  // Call all subscribed callbacks
   subscribers.forEach((callback) => {
     callback(data);
   });
@@ -90,8 +88,12 @@ export const fetchHistoricalData = async () => {
     snapshot.forEach((childSnapshot) => {
       const data = childSnapshot.val();
       historicalData.push({
-        temperature: data.temperature,
         timestamp: data.timestamp,
+        temperature: data.temperature,
+        //humidity: data.humidity,
+        //airQuality: data.air_quality,
+       // ambientLight: data.ambient_light,
+        //moisture: data.moisture,
       });
     });
 
@@ -101,18 +103,3 @@ export const fetchHistoricalData = async () => {
     console.error('Error fetching historical data:', error);
   }
 };
-/*
-// Example usage:
-fetchHistoricalData((data) => {
-  console.log('Fetched Historical Data:', data);
-  // You can do something with the historical data here
-});
-
-
-fetchHistoricalData()
-  .then((data) => {
-    console.log('Fetched Historical Data:', data);
-    renderChart(data); // Call your chart rendering function here
-  })
-  .catch((error) => console.error('Error:', error));
-*/

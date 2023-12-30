@@ -2,7 +2,7 @@
 
 import { device } from "../models/device.js";
 import { sensorDataDB } from "../models/firebase.js";
-
+import { fetchHistoricalData } from '../models/firebase.js';
 
 // Initialize an array to store the latest sensor data
 let latestSensorData = {

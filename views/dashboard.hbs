@@ -3,53 +3,54 @@
 <section class="section">
   <h1 class="title has-text-centered">Your Mould-O-Matic Dashboard</h1>
 
+  <div>
     <div id="temperature">
-        <p>Temperature: {{ temperature }}</p>
+        <p class="{{#if tempWarning}}has-text-danger{{else}}has-text-success{{/if}}">Temperature: {{ temperature }} &degC</p>
     </div>
     <div id="humidity">
-        <p>Humidity: {{ humidity }}</p>
+        <p class="{{#if humidityWarning}}has-text-danger{{else}}has-text-success{{/if}}">Humidity: {{ humidity }} %RH</p>
     </div>
     <div id="airQuality">
-        <p>Air Quality Index: {{ airQuality }}</p>
+        <p class="{{#if healthWarning}}has-text-danger{{else}}has-text-success{{/if}}">Air Quality Index: {{ airQuality }}</p>
     </div>
     <div id="moisture">
-        <p>moisture: {{ moisture }}</p>
+        <p class="{{#if moistureWarning}}has-text-danger{{else}}has-text-success{{/if}}">moisture: {{ moisture }}</p>
     </div>
     <div id="ambientLight">
-        <p>ambientLight: {{ ambientLight }}</p>
+        <p class="{{#if lightWarning}}has-text-danger{{else}}has-text-success{{/if}}">ambientLight: {{ ambientLight }}</p>
     </div>
     <div>
         <p>dehu status: {{ dehumidifierStatus }}</p>
     </div>
-
-    <!-- Add a form for the button with a hidden input field -->
-<form action="/updateDehumidifier" method="POST">
+  </div>
+  <div>
+    {{#if warning4}}<div>{{> warning4}}</div>{{/if}}
+    {{#if warning3}}<div>{{> warning3}}</div>{{/if}}
+    {{#if warning2}}<div>{{> warning2}}</div>{{/if}}
+    {{#if warning1}}<div>{{> warning1}}</div>{{/if}}
+  </div>
+  
+    {{#if healthWarning}}<div>{{> health-warning}}</div>{{/if}}
+  
+<div class="is-flex is-justify-content-center">
+<form action="/updateDehumidifier" method="POST" class="has-text-centered">
   <button type="submit" class="button {{#if dehumidifierStatus}}is-danger{{else}}is-success{{/if}}">
     {{#if dehumidifierStatus}}Turn Off Dehumidifier{{else}}Turn On Dehumidifier{{/if}}
   </button>
 </form>
 
+<div class="ml-2 mr-2"></div>
 
-<form action="/historical-data" method="GET">
+<form action="/historical-data" method="GET" class="has-text-centered">
   <button type="submit" class="button is-success">
     Analyse Data
   </button>
 </form>
+</div>
+
 
   <div id="historicalChartContainer">
     <canvas id="historicalChart" width="600" height="300"></canvas>
   </div>
-
-<div class="columns">
-    <div class="column">
-        <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/1?bgcolor=%23edd8c7&color=%23d62020&results=1000&title=Temperature&yaxis=%C2%B0C"></iframe>
-        <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/2?bgcolor=%23ceedc7&color=%23d62020&results=1000&title=Humidity&yaxis=%25+RH"></iframe>
-    </div>
-    <div class="column">
-        <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/4?bgcolor=%23c7eaed&color=%23d62020&results=1000&title=Air+Quality&yaxis=Air+Quality+Index"></iframe>
-        <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/5?bgcolor=%23faf8a5&color=%23d62020&results=60"></iframe>
-        <iframe width="450" height="260" style="border: 1px solid #cccccc;" src="https://thingspeak.com/channels/2378087/charts/3?bgcolor=%23ffffff&color=%23d62020&results=1000"></iframe>
-    </div>
-</div>
 
 </section>

@@ -26,8 +26,71 @@ export const dashboardController = {
         try {
             // Call fetchData method from the device module
             const pinData = await device.fetchData();
-      
-            // Include the fetched data in the viewData object
+            var tempWarning;
+            var humidityWarning;
+            var healthWarning;
+            var moistureWarning;
+            var lightWarning;
+            var warning1;
+            var warning2;
+            var warning3;
+            var warning4;
+
+            // set the value of the boolean flags
+            if (latestSensorData?.temperature >= 18 && latestSensorData?.temperature <= 30){
+              tempWarning = true;
+            } else {
+              tempWarning = false;
+            };
+            if (latestSensorData?.humidity >= 70 ){
+              humidityWarning = true;
+            } else {
+              humidityWarning = false;
+            };
+            if (latestSensorData?.airQuality >= 60){
+              healthWarning = true;
+            } else {
+              healthWarning = false;
+            };
+            if (latestSensorData?.moisture <= 700){
+              moistureWarning = true;
+            } else {
+              moistureWarning = false;
+            };
+            if (latestSensorData?.ambientLight <= 100){
+              lightWarning = true;
+            } else {
+              lightWarning = false;
+            };
+
+            if (tempWarning + lightWarning + humidityWarning + moistureWarning == 4){
+              warning4 = true;
+              warning3 = false;
+              warning2 = false;
+              warning1 = false;
+            } else if (tempWarning + lightWarning + humidityWarning + healthWarning + moistureWarning == 3) {
+              warning4 = false;
+              warning3 = true;
+              warning2 = false;
+              warning1 = false;
+            } else if (tempWarning + lightWarning + humidityWarning + healthWarning + moistureWarning == 2) {
+              warning4 = false;
+              warning3 = false;
+              warning2 = true;
+              warning1 = false;
+            } else if (tempWarning + lightWarning + humidityWarning + healthWarning + moistureWarning == 1){
+              warning4 = false;
+              warning3 = false;
+              warning2 = false;
+              warning1 = true;
+            } else {
+              warning4 = false;
+              warning3 = false;
+              warning2 = false;
+              warning1 = false;
+            }
+            
+            
             const viewData = {
               title: "Dashboard",
               
@@ -37,7 +100,18 @@ export const dashboardController = {
               moisture: latestSensorData?.moisture,
               ambientLight: latestSensorData?.ambientLight,
               dehumidifierStatus: pinData.v0,
-              
+
+              tempWarning: tempWarning,
+              humidityWarning: humidityWarning,
+              healthWarning: healthWarning,
+              moistureWarning: moistureWarning,
+              lightWarning: lightWarning,
+
+              warning4: warning4,
+              warning3: warning3,
+              warning2: warning2,
+              warning1: warning1,
+
             };
       
             console.log("rendering dashboard");

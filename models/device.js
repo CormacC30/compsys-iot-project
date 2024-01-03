@@ -3,7 +3,7 @@ import * as https from "https";
 const authToken = process.env.BLYNK_AUTH_TOKEN; 
 //console.log('Blynk Auth Token:', process.env.BLYNK_AUTH_TOKEN);
 //console.log('All Environment Variables:', process.env);
-const pinNumber = 1; // Replace with the desired virtual pin number
+const pinNumber = 1; 
 
 const options = {
   hostname: "blynk.cloud",
@@ -11,7 +11,7 @@ const options = {
   path: `/external/api/getAll?token=${authToken}`, 
   method: "GET",
 };
-
+// function to get the status of the virtual pin
 export const device = {
   fetchData: () => {
     return new Promise((resolve, reject) => {
@@ -39,7 +39,7 @@ export const device = {
       req.end();
     });
   },
-
+// function to update teh status of virtual pin
   updatePin: function (pinNumber, status) {
     return new Promise((resolve, reject) => {
       // Ensure that the status is either 0 or 1

@@ -8,7 +8,8 @@
 #include <ArduinoJson.h>
 #include <BlynkSimpleWifi.h>
 #include <ArduinoHttpClient.h>
-// #include <Firebase_Arduino_WiFiNINA.h>
+#include <Firebase_Arduino_WiFiNINA.h>
+#include <RTCZero.h> 
 
 #define OFF false
 #define ON true
@@ -24,12 +25,13 @@ const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
 char ssid[] = WIFI_NAME;
 char pass[] = WIFI_PASSWORD;
 char auth[] = BLYNK_AUTH_TOKEN;
-//char dburl[] = DATABASE_URL;
-//char dbsecret[] =  DATABASE_SECRET;
+char dburl[] = DATABASE_URL;
+char dbsecret[] =  DATABASE_SECRET;
 int status = WL_IDLE_STATUS;
 const char *mqttServer = "mqtt3.thingspeak.com";
 const int mqttPort = 1883;
 bool deviceState = OFF;
+
 
 String webhookURL;
 
@@ -52,11 +54,11 @@ String output;
 
 BlynkTimer timer;
 
+FirebaseData firebaseData;
+RTCZero rtc;
+
 void checkIaqSensorStatus(void);
 void errLeds(void);
-//void updateThingSpeak(void);
-
-// FirebaseData firebaseData;
 
 void setup(void)
 {
@@ -72,6 +74,8 @@ void setup(void)
  // ThingSpeak.begin(wifiClient);
 
   checkIaqSensorStatus();
+
+  rtc.begin();
 
   bsec_virtual_sensor_t sensorList[13] = {
       BSEC_OUTPUT_IAQ,
@@ -107,8 +111,8 @@ void setup(void)
   timer.setInterval(2000L, writeAmbientLight);
   timer.setInterval(2000L, writeMoisture);
 
-//  Firebase.begin(dburl, dbsecret, ssid, pass);
-//  Firebase.reconnectWiFi(true); 
+ Firebase.begin(dburl, dbsecret, ssid, pass);
+ Firebase.reconnectWiFi(true); 
 }
 
 int getAmbientLight() {
@@ -158,7 +162,7 @@ void loop(void)
       // Print the values
       //Serial.print("Ambient Light: ");
       //Serial.println(ambientLight);
-      //Serial.println();
+     // Serial.println();
       //Serial.println(output);
       digitalWrite(LED_BUILTIN, HIGH);
     }
@@ -166,8 +170,8 @@ void loop(void)
     {
       checkIaqSensorStatus();
     }
-
-
+  
+  sendToDB();
   
   }
 
@@ -180,7 +184,7 @@ void loop(void)
   }
   */
  // Serial.println(output);
-  sendJSONData();
+ // sendJSONData();
   Blynk.run();
   timer.run();
 
@@ -211,7 +215,7 @@ void updateThingSpeak()
   }
 }
 */
-
+/*
 void sendJSONData() {
   DynamicJsonDocument jsonDoc(512);
 
@@ -230,6 +234,7 @@ void sendJSONData() {
   Serial.println(jsonString);
   delay(1000);
 }
+*/
 
 
 void checkIaqSensorStatus(void)
@@ -369,6 +374,57 @@ void writeAmbientLight()
   Blynk.virtualWrite(V5, ambientLight);
 }
 
+void sendToDB() {
+  float iaqAccuracy = iaqSensor.iaqAccuracy;
+  float staticIAQ = iaqSensor.staticIaq;
+  float humidity = iaqSensor.rawHumidity;
+  float temperature = iaqSensor.temperature;
+  int ambientLight = getAmbientLight();
+  int moisture = analogRead(moisturePin);
+    unsigned long epoch;
+  int numberOfTries = 0, maxTries = 6;
+
+  do {
+    epoch = WiFi.getTime();
+    numberOfTries++;
+  } while ((epoch == 0) && (numberOfTries < maxTries));
+
+  if (numberOfTries == maxTries) {
+    Serial.print("NTP unreachable!!");
+    return; // Exit the function if NTP is unreachable
+  }
+
+  rtc.setEpoch(epoch);
+
+  // Get individual time components
+  int year = rtc.getYear();
+  int month = rtc.getMonth();
+  int day = rtc.getDay();
+  int hour = rtc.getHours();
+  int minute = rtc.getMinutes();
+  int second = rtc.getSeconds();
+
+  // Format timestamp as per ISO8601
+  String timestamp = "20"+String(year) + "-" + twoDigits(month) + "-" + twoDigits(day) +
+                     "T" + twoDigits(hour) + ":" + twoDigits(minute) + ":" + twoDigits(second) + "." + "000000";
+  
+String path = "/sensors";
+String jsonString;
+  jsonString = "{\"timestamp\":\"" + timestamp +
+               "\",\"temperature\":" + String(temperature) +
+               ",\"humidity\":" + String(humidity) +
+               ",\"air_quality\":" + String(staticIAQ) +
+               ",\"ambient_light\":" + String(ambientLight) + 
+               ",\"moisture\":" + String(moisture) + "}";
+if(Firebase.pushJSON(firebaseData, path, jsonString)) {
+  Serial.println("path: " + firebaseData.dataPath());
+} else {
+  Serial.println("error, " + firebaseData.errorReason());
+}
+  Serial.println("Pushing json... ");
+  Serial.println(jsonString);
+}
+
 BLYNK_WRITE(V0) {
   int buttonState = param.asInt();
 
@@ -391,5 +447,11 @@ BLYNK_WRITE(V0) {
     }
 }
 
-
+String twoDigits(int value) {
+  if (value < 10) {
+    return "0" + String(value);
+  } else {
+    return String(value);
+  }
+}
 

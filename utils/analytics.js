@@ -11,7 +11,7 @@ async chartData(chartData){
         ambientLightTrend: [],
         trendLabels: []
       };
-      const startIndex = Math.max(0, chartData.length - 1000);
+      const startIndex = Math.max(0, chartData.length - 50);
     const endIndex = chartData.length;
     for (let i = startIndex; i < endIndex; i++){
         //const timestamp = new Date(chartData[i].timestamp).getTime() / 1000;  // Convert to Unix timestamp

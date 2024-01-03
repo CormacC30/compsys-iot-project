@@ -30,7 +30,7 @@ async function generateHistoricalChart() {
           x: {
             type: 'time',
             time: {
-              unit: 'day', // Adjust the unit as needed
+              unit: 'day', 
             },
             title: {
               display: true,

@@ -48,7 +48,7 @@ bool trigger = false;
 unsigned long previousMillisSerial = 0;
 unsigned long previousMillisUpdate = 0;
 const long serialInterval = 1000;   // Print to serial monitor every second
-const long updateInterval = 15000;  // Update ThingSpeak every 15 seconds
+const long firebaseUpdateInterval = 5000;  // Update ThingSpeak every 15 seconds
 
 String output;
 
@@ -163,17 +163,23 @@ void loop(void)
       //Serial.print("Ambient Light: ");
       //Serial.println(ambientLight);
      // Serial.println();
-      //Serial.println(output);
+      Serial.println(output);
       digitalWrite(LED_BUILTIN, HIGH);
     }
     else
     {
       checkIaqSensorStatus();
     }
-  
-  sendToDB();
-  
+
   }
+  
+    if (currentMillis - previousMillisUpdate >= firebaseUpdateInterval)
+  {
+    previousMillisUpdate = currentMillis;
+    sendToDB();
+  }
+  
+  
 
   // Update ThingSpeak every 15 seconds
   /*
@@ -423,6 +429,7 @@ if(Firebase.pushJSON(firebaseData, path, jsonString)) {
 }
   Serial.println("Pushing json... ");
   Serial.println(jsonString);
+  delay(1000);
 }
 
 BLYNK_WRITE(V0) {
@@ -433,18 +440,15 @@ BLYNK_WRITE(V0) {
     if (deviceState == OFF) {
       // Turn on the device
       turnOnDevice();
-
       deviceState = ON;
-    } 
     }
-    else if (buttonState == 0) {
-      if (deviceState == ON) {
+  } else if (buttonState == 0) {
+    if (deviceState == ON) {
       // Turn off the device
       turnOffDevice();
-
       deviceState = OFF;  // Update deviceState only when turning off
-      }
     }
+  }
 }
 
 String twoDigits(int value) {

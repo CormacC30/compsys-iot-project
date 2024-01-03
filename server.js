@@ -38,7 +38,7 @@ app.use('/', router);
 io.on('connection', (socket) => {
  
 
- // Handle WebSocket events
+ //  WebSocket events
  console.log('Client connected');
   // Fetch initial data
   device.fetchData().then((data) => {

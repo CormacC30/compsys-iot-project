@@ -132,14 +132,11 @@ void loop(void)
   unsigned long currentMillis = millis();
 
   // Print to serial every 1 second
-  if (currentMillis - previousMillisSerial >= serialInterval)
-  {
-    previousMillisSerial = currentMillis;
     output = "";
     int moisture = analogRead(moisturePin);
 
     int ambientLight = getAmbientLight();
-
+ 
     if (iaqSensor.run())
     {
       digitalWrite(LED_BUILTIN, LOW);
@@ -170,8 +167,8 @@ void loop(void)
     {
       checkIaqSensorStatus();
     }
-
-  }
+    delay(1000);
+  
   
     if (currentMillis - previousMillisUpdate >= firebaseUpdateInterval)
   {

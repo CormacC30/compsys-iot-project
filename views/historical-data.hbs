@@ -60,6 +60,17 @@
         borderColor: 'orange',
         backgroundColor: 'transparent',
       },
+            {
+        label: 'Moisture',
+        yAxisID: 'Moisture',
+        data: [
+          {{#each chartData.moistureTrend}}
+          {{this}},
+          {{/each}}
+        ],
+        borderColor: 'purple',
+        backgroundColor: 'transparent',
+      },
     ]
   };
 
@@ -106,6 +117,14 @@
           scaleLabel: {
             display: true,
             labelString: 'Ambient Light',
+          },
+        },
+                Moisture: {
+          type: 'linear',
+          position: 'left',
+          scaleLabel: {
+            display: true,
+            labelString: 'Moisture (A.U.)', 
           },
         },
       },

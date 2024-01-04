@@ -9,6 +9,7 @@ async chartData(chartData){
         airQualityTrend: [],
         humidityTrend: [],
         ambientLightTrend: [],
+        moistureTrend: [],
         trendLabels: []
       };
       const startIndex = 0 //Math.max(0, chartData.length - 1000);
@@ -21,6 +22,7 @@ async chartData(chartData){
         report.humidityTrend.push(dataPoint.humidity);
         report.ambientLightTrend.push(dataPoint.ambientLight);
         report.trendLabels.push(dataPoint.timestamp);
+        report.moistureTrend.push(dataPoint.moisture);
     }
     return report;
 }

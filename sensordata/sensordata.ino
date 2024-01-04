@@ -48,7 +48,7 @@ bool trigger = false;
 unsigned long previousMillisSerial = 0;
 unsigned long previousMillisUpdate = 0;
 const long serialInterval = 1000;   // Print to serial monitor every second
-const long firebaseUpdateInterval = 5000;  // Update ThingSpeak every 15 seconds
+const long firebaseUpdateInterval = 15000;  // Update ThingSpeak every 15 seconds
 
 String output;
 
@@ -131,7 +131,6 @@ void loop(void)
 {
   unsigned long currentMillis = millis();
 
-  // Print to serial every 1 second
     output = "";
     int moisture = analogRead(moisturePin);
 
@@ -157,88 +156,88 @@ void loop(void)
     output += ", moisture: " + String(moisture);
 
       // Print the values
-      //Serial.print("Ambient Light: ");
-      //Serial.println(ambientLight);
+      //
      // Serial.println();
+     Serial.println("BSEC status during setup: " + String(iaqSensor.bsecStatus));
+
       Serial.println(output);
       digitalWrite(LED_BUILTIN, HIGH);
+       Serial.print("Ambient Light: ");
+      Serial.println(ambientLight);
+    
+      delay(1000);
     }
     else
     {
       checkIaqSensorStatus();
     }
-    delay(1000);
-  
+   
   
     if (currentMillis - previousMillisUpdate >= firebaseUpdateInterval)
   {
-    previousMillisUpdate = currentMillis;
     sendToDB();
-  }
-  
-  
-
-  // Update ThingSpeak every 15 seconds
-  /*
-  if (currentMillis - previousMillisUpdate >= updateInterval)
-  {
     previousMillisUpdate = currentMillis;
-    updateThingSpeak();
+    
   }
-  */
- // Serial.println(output);
- // sendJSONData();
+
+bool tempWarning;
+bool humidityWarning;
+bool lightWarning;
+bool healthWarning;
+bool moistureWarning;
+int warningSum = tempWarning + humidityWarning + lightWarning + moistureWarning + healthWarning;
+
+if (iaqSensor.temperature >= 18 && iaqSensor.temperature <= 25){
+  tempWarning = true;
+} else {
+  tempWarning = false;
+}
+
+if (iaqSensor.rawHumidity >= 60){
+  humidityWarning = true;
+} else {
+  humidityWarning = false;
+}
+
+if (ambientLight <= 200){
+  lightWarning = true;
+} else {
+  lightWarning = false;
+}
+
+  if (moisture < 750)
+    {
+      moistureWarning = true;
+      Serial.println("Moisture below 750! Sending event to Blynk.");
+      Blynk.logEvent("danger_moisture_levels", String("Dangerous Moisture Levels!: ") + moisture);
+    } else {
+      moistureWarning = false;
+    }
+
+if (iaqSensor.staticIaq >= 60){
+  healthWarning = true;
+} else {
+  healthWarning = false;
+}
+
+  if (warningSum = 5) {
+    //Serial.println("SEVERE MOULD AND HEALTH RISK");
+    Blynk.logEvent("severe_mould_health_risk", String("SEVERE MOULD AND HEALTH RISK!!"));
+  } else if (warningSum = 4) {
+    //Serial.println("SEVERE MOULD RISK");
+    Blynk.logEvent("severe_mould_risk", String("SEVERE MOULD RISK!!"));
+  } else if (warningSum = 3) {
+    //Serial.println("Attention! possible mould risk");
+    Blynk.logEvent("possible_mould_risk", String ("possible mould risk"));
+  } else if (warningSum = 2){
+    //Serial.println("Caution mild risk of mould");
+    Blynk.logEvent("possible_mould_risk", String ("possible mould risk"));
+  }
+ 
   Blynk.run();
   timer.run();
 
 }
-/*
-void updateThingSpeak()
-{
-  float iaqAccuracy = iaqSensor.iaqAccuracy;
-  float staticIAQ = iaqSensor.staticIaq;
-  float humidity = iaqSensor.rawHumidity;
-  float temperature = iaqSensor.temperature;
-  int ambientLight = getAmbientLight();
-
-  ThingSpeak.setField(1, temperature);
-  ThingSpeak.setField(2, humidity);
-  ThingSpeak.setField(3, A6);
-  ThingSpeak.setField(4, staticIAQ);
-  ThingSpeak.setField(5, ambientLight);
-
-  int x = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-  if (x == 200)
-  {
-    Serial.println("Channel update successful.");
-  }
-  else
-  {
-    Serial.println("Problem updating channel. HTTP error code " + String(x));
-  }
-}
-*/
-/*
-void sendJSONData() {
-  DynamicJsonDocument jsonDoc(512);
-
-  // Add data to the JSON document
-  jsonDoc["temperature"] = iaqSensor.temperature;
-  jsonDoc["humidity"] = iaqSensor.humidity;
-  jsonDoc["air_quality"] = iaqSensor.staticIaq;
-  jsonDoc["ambient_light"] = getAmbientLight();
-  jsonDoc["moisture"] = analogRead(moisturePin);
-
-  // Serialize JSON to a String
-  String jsonString;
-  serializeJson(jsonDoc, jsonString);
-
-  // Send JSON data through the serial port
-  Serial.println(jsonString);
-  delay(1000);
-}
-*/
-
 
 void checkIaqSensorStatus(void)
 {

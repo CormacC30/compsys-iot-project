@@ -52,12 +52,12 @@ export const dashboardController = {
             } else {
               healthWarning = false;
             };
-            if (latestSensorData?.moisture <= 700){
+            if (latestSensorData?.moisture <= 750){
               moistureWarning = true;
             } else {
               moistureWarning = false;
             };
-            if (latestSensorData?.ambientLight <= 100){
+            if (latestSensorData?.ambientLight <= 200){
               lightWarning = true;
             } else {
               lightWarning = false;

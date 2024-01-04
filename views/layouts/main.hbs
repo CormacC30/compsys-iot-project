@@ -19,7 +19,7 @@
 <script>
   const socket = io('http://localhost:4000'); 
 
-  socket.on('open', (event) => {
+  socket.on('connect', (event) => {
     console.log('WebSocket connection opened');
   });
 
@@ -40,7 +40,7 @@
   });
 
   // Connection closed
-  socket.on('close', (event) => {
+  socket.on('disconnect', (event) => {
     console.log('WebSocket connection closed');
   });
 

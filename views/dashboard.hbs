@@ -11,9 +11,11 @@
       <div class="column is-one-fifth">
         <div class="card">
           <div class="card-content has-text-bold">
+            <span id="temperature">
             <p class="{{#if tempWarning}}has-text-danger{{else}}has-text-success{{/if}}">
               Temperature: {{ temperature }} &degC
             </p>
+            </span>
           </div>
         </div>
       </div>
@@ -22,9 +24,11 @@
       <div class="column is-one-fifth">
         <div class="card">
           <div class="card-content has-text-bold">
+            <span id="humidity">
             <p class="{{#if humidityWarning}}has-text-danger{{else}}has-text-success{{/if}}">
               Humidity: {{ humidity }} %RH
             </p>
+            </span>
           </div>
         </div>
       </div>
@@ -33,9 +37,11 @@
       <div class="column is-one-fifth">
         <div class="card">
           <div class="card-content has-text-bold">
+            <span id="airQuality">
             <p class="{{#if healthWarning}}has-text-danger{{else}}has-text-success{{/if}}">
               Air Quality Index: {{ airQuality }}
             </p>
+            </span>
           </div>
         </div>
       </div>
@@ -44,9 +50,11 @@
       <div class="column is-one-fifth">
         <div class="card">
           <div class="card-content has-text-bold">
+            <span id="moisture">
             <p class="{{#if moistureWarning}}has-text-danger{{else}}has-text-success{{/if}}">
               Moisture: {{ moisture }}
             </p>
+            </span>
           </div>
         </div>
       </div>
@@ -55,9 +63,11 @@
       <div class="column is-one-fifth">
         <div class="card">
           <div class="card-content has-text-bold">
+            <span id="ambientLight">
             <p class="{{#if lightWarning}}has-text-danger{{else}}has-text-success{{/if}}">
               Ambient Light: {{ ambientLight }}
             </p>
+            </span>
           </div>
         </div>
       </div>

@@ -180,59 +180,23 @@ void loop(void)
     
   }
 
-bool tempWarning;
-bool humidityWarning;
-bool lightWarning;
-bool healthWarning;
-bool moistureWarning;
+bool tempWarning = (iaqSensor.temperature >= 18 && iaqSensor.temperature <= 25);
+bool humidityWarning = (iaqSensor.rawHumidity >= 60);
+bool lightWarning = (ambientLight <= 200);
+bool moistureWarning = (moisture < 750);
+bool healthWarning = (iaqSensor.staticIaq >= 60);
+
 int warningSum = tempWarning + humidityWarning + lightWarning + moistureWarning + healthWarning;
 
-if (iaqSensor.temperature >= 18 && iaqSensor.temperature <= 25){
-  tempWarning = true;
-} else {
-  tempWarning = false;
+if (warningSum == 5) {
+  Blynk.logEvent("severe_mould_health_risk", "SEVERE MOULD AND HEALTH RISK!!");
+} else if (warningSum == 4) {
+  Blynk.logEvent("severe_mould_risk", "SEVERE MOULD RISK!!");
+} else if (warningSum == 3) {
+  Blynk.logEvent("possible_mould_risk", "Possible mould risk");
+} else if (warningSum == 2) {
+  Blynk.logEvent("mild_mould_risk", "Mild mould risk");
 }
-
-if (iaqSensor.rawHumidity >= 60){
-  humidityWarning = true;
-} else {
-  humidityWarning = false;
-}
-
-if (ambientLight <= 200){
-  lightWarning = true;
-} else {
-  lightWarning = false;
-}
-
-  if (moisture < 750)
-    {
-      moistureWarning = true;
-      Serial.println("Moisture below 750! Sending event to Blynk.");
-      Blynk.logEvent("danger_moisture_levels", String("Dangerous Moisture Levels!: ") + moisture);
-    } else {
-      moistureWarning = false;
-    }
-
-if (iaqSensor.staticIaq >= 60){
-  healthWarning = true;
-} else {
-  healthWarning = false;
-}
-
-  if (warningSum = 5) {
-    //Serial.println("SEVERE MOULD AND HEALTH RISK");
-    Blynk.logEvent("severe_mould_health_risk", String("SEVERE MOULD AND HEALTH RISK!!"));
-  } else if (warningSum = 4) {
-    //Serial.println("SEVERE MOULD RISK");
-    Blynk.logEvent("severe_mould_risk", String("SEVERE MOULD RISK!!"));
-  } else if (warningSum = 3) {
-    //Serial.println("Attention! possible mould risk");
-    Blynk.logEvent("possible_mould_risk", String ("possible mould risk"));
-  } else if (warningSum = 2){
-    //Serial.println("Caution mild risk of mould");
-    Blynk.logEvent("possible_mould_risk", String ("possible mould risk"));
-  }
  
   Blynk.run();
   timer.run();

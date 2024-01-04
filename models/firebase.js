@@ -1,6 +1,5 @@
 import { getDatabase, ref, onValue, get, orderByKey, limitToLast } from 'firebase/database';
 import { initializeApp } from "firebase/app";
-import * as firebase from "firebase/database";
 
 const apiKey = process.env.API_KEY;
 const authDomain = process.env.AUTH_DOMAIN;

@@ -3,24 +3,72 @@
 <section class="section">
   <h1 class="title has-text-centered">Your Mould-O-Matic Dashboard</h1>
 
-  <div>
-    <div id="temperature">
-        <p class="{{#if tempWarning}}has-text-danger{{else}}has-text-success{{/if}}">Temperature: {{ temperature }} &degC</p>
+  <div class="box has-background-success-light">
+    <h2 class="is-size-4 has-text-bold has-text-centered">Real-Time Sensor Data</h2>
+    <div class="columns">
+
+      <!-- Temperature Card -->
+      <div class="column is-one-fifth">
+        <div class="card">
+          <div class="card-content has-text-bold">
+            <p class="{{#if tempWarning}}has-text-danger{{else}}has-text-success{{/if}}">
+              Temperature: {{ temperature }} &degC
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Humidity Card -->
+      <div class="column is-one-fifth">
+        <div class="card">
+          <div class="card-content has-text-bold">
+            <p class="{{#if humidityWarning}}has-text-danger{{else}}has-text-success{{/if}}">
+              Humidity: {{ humidity }} %RH
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Air Quality Card -->
+      <div class="column is-one-fifth">
+        <div class="card">
+          <div class="card-content has-text-bold">
+            <p class="{{#if healthWarning}}has-text-danger{{else}}has-text-success{{/if}}">
+              Air Quality Index: {{ airQuality }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moisture Card -->
+      <div class="column is-one-fifth">
+        <div class="card">
+          <div class="card-content has-text-bold">
+            <p class="{{#if moistureWarning}}has-text-danger{{else}}has-text-success{{/if}}">
+              Moisture: {{ moisture }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ambient Light Card -->
+      <div class="column is-one-fifth">
+        <div class="card">
+          <div class="card-content has-text-bold">
+            <p class="{{#if lightWarning}}has-text-danger{{else}}has-text-success{{/if}}">
+              Ambient Light: {{ ambientLight }}
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <div id="humidity">
-        <p class="{{#if humidityWarning}}has-text-danger{{else}}has-text-success{{/if}}">Humidity: {{ humidity }} %RH</p>
-    </div>
-    <div id="airQuality">
-        <p class="{{#if healthWarning}}has-text-danger{{else}}has-text-success{{/if}}">Air Quality Index: {{ airQuality }}</p>
-    </div>
-    <div id="moisture">
-        <p class="{{#if moistureWarning}}has-text-danger{{else}}has-text-success{{/if}}">moisture: {{ moisture }}</p>
-    </div>
-    <div id="ambientLight">
-        <p class="{{#if lightWarning}}has-text-danger{{else}}has-text-success{{/if}}">ambientLight: {{ ambientLight }}</p>
-    </div>
+
+
     <div>
-        <p>dehu status: {{ dehumidifierStatus }}</p>
+      <div>
+        <p>Dehumidifier Status: {{ dehumidifierStatus }}</p>
+      </div>
     </div>
   </div>
   <div>
@@ -29,24 +77,24 @@
     {{#if warning2}}<div>{{> warning2}}</div>{{/if}}
     {{#if warning1}}<div>{{> warning1}}</div>{{/if}}
   </div>
-  
-    {{#if healthWarning}}<div>{{> health-warning}}</div>{{/if}}
-  
-<div class="is-flex is-justify-content-center">
-<form action="/updateDehumidifier" method="POST" class="has-text-centered">
-  <button type="submit" class="button {{#if dehumidifierStatus}}is-danger{{else}}is-success{{/if}}">
-    {{#if dehumidifierStatus}}Turn Off Dehumidifier{{else}}Turn On Dehumidifier{{/if}}
-  </button>
-</form>
 
-<div class="ml-2 mr-2"></div>
+  {{#if healthWarning}}<div>{{> health-warning}}</div>{{/if}}
 
-<form action="/historical-data" method="GET" class="has-text-centered">
-  <button type="submit" class="button is-success">
-    Analyse Data
-  </button>
-</form>
-</div>
+  <div class="is-flex is-justify-content-center">
+    <form action="/updateDehumidifier" method="POST" class="has-text-centered">
+      <button type="submit" class="button {{#if dehumidifierStatus}}is-danger{{else}}is-success{{/if}}">
+        {{#if dehumidifierStatus}}Turn Off Dehumidifier{{else}}Turn On Dehumidifier{{/if}}
+      </button>
+    </form>
+
+    <div class="ml-2 mr-2"></div>
+
+    <form action="/historical-data" method="GET" class="has-text-centered">
+      <button type="submit" class="button is-success">
+        Analyse Data
+      </button>
+    </form>
+  </div>
 
 
   <div id="historicalChartContainer">

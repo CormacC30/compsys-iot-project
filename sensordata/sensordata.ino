@@ -48,7 +48,7 @@ bool trigger = false;
 unsigned long previousMillisSerial = 0;
 unsigned long previousMillisUpdate = 0;
 const long serialInterval = 1000;   // Print to serial monitor every second
-const long firebaseUpdateInterval = 15000;  // Update ThingSpeak every 15 seconds
+const long firebaseUpdateInterval = 5000;  // Update ThingSpeak every 15 seconds
 
 String output;
 

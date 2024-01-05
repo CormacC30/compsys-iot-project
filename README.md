@@ -1,5 +1,8 @@
 # compsys-iot-project Cormac Costello
 
+# LINK TO YOUTUBE VIDEO DEMO/DESCRIPTION:
+https://youtu.be/jY2nhqHUauc
+
 # MOULD-O-MATIC home environmental monitoring system.
 
 # Background and description:
